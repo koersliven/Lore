@@ -1,0 +1,38 @@
+version: "0.1"
+project:
+  name: ""  # Will be filled during /init-context
+  description: ""
+  tech_stack: []
+
+knowledge:
+  # Buffer flush thresholds
+  buffer:
+    flush_threshold_soft: 3    # Knowledge entries after which flush is suggested
+    flush_threshold_hard: 10   # Knowledge entries after which flush is forced
+    max_buffer_size: 50        # Max lines before forced flush (safety net)
+
+  # Knowledge categories to extract
+  categories:
+    - name: "DECISION"
+      description: "Design choice with rationale"
+    - name: "CONSTRAINT"
+      description: "Immutable rule with reason"
+    - name: "ARCHITECTURE"
+      description: "System relationship or flow"
+    - name: "EXTERNAL"
+      description: "External dependency information"
+
+  # Snapshot constraints
+  snapshot:
+    max_lines: 200
+    archive_threshold: 10  # Increments before archiving
+
+modules: []
+  # - name: "web"
+  #   path: "src/web"
+  #   role: "HTTP entry points"
+
+external_types: []
+  # - class: "AbilityExpand"
+  #   source: "nurture-product-tenant-common.jar"
+  #   fields: []
