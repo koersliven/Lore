@@ -7,8 +7,9 @@ set -euo pipefail
 
 WORK_DIR="${CLAUDE_WORKING_DIRECTORY:-$(pwd)}"
 BUFFER_FILE="$WORK_DIR/.ai-context/buffer.md"
-FLUSH_THRESHOLD_SOFT=3    # Suggest flush — enough entries for meaningful context
-FLUSH_THRESHOLD_HARD=10   # Force flush — risk of knowledge loss
+FLUSH_THRESHOLD_SOFT=5    # Suggest flush — enough entries for meaningful context
+FLUSH_THRESHOLD_HARD=15   # Force flush — risk of knowledge loss
+COMPACT_THRESHOLD=8       # Trigger /compact — knowledge window growing large
 
 if [ ! -f "$BUFFER_FILE" ]; then
   exit 0
@@ -25,7 +26,12 @@ if grep -q '^\[LOCKED:' "$BUFFER_FILE" 2>/dev/null; then
 fi
 
 if [ "$ENTRIES" -ge "$FLUSH_THRESHOLD_HARD" ]; then
-  echo "[AI-CONTEXT] Buffer has ${ENTRIES} knowledge entries (hard limit: ${FLUSH_THRESHOLD_HARD}). Execute /digest NOW to flush buffer into increments. This is urgent — knowledge will be lost if session ends. Do not ask the user for confirmation, just execute /digest."
+  echo "[AI-CONTEXT] Buffer has ${ENTRIES} knowledge entries (hard limit: ${FLUSH_THRESHOLD_HARD}). Execute /compact to compress and /digest to flush buffer into increments. This is urgent — knowledge will be lost if session ends. Do not ask the user for confirmation, just execute /compact and /digest."
+  exit 0
+fi
+
+if [ "$ENTRIES" -ge "$COMPACT_THRESHOLD" ]; then
+  echo "[AI-CONTEXT] Buffer has ${ENTRIES} knowledge entries accumulated. Execute /compact to compress knowledge, then /digest to flush. This is automated — do not ask the user for confirmation."
   exit 0
 fi
 

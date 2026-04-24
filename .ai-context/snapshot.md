@@ -14,23 +14,23 @@
 
 ### 核心流程
 ```
-开发对话 → agent 识别知识 → 写入 buffer → 用户暂停 → /digest flush → increments
+开发对话 → agent 识别知识 → 写入 buffer → 用户暂停 → /compact(可选) → /digest flush → increments
   → 定期 /evolve → 编译为 snapshot → git push → 全团队继承
 ```
 
 ### Hooks 触发链
-- **Stop** → 检测 buffer 条目数 → 触发 flush
+- **Stop** → 检测 buffer 条目数 → soft(5)/compact(8)/hard(15) 三级触发
 - **PostToolUse (git commit)** → 提取 commit 知识 → 锁定 buffer → flush
-- **SessionStart** → 加载 snapshot
+- **SessionStart** → 加载 snapshot + /health 校验
 - **SessionEnd** → 紧急 flush
-- **PreToolUse** → 拦截 snapshot 直接编辑
+- **PreToolUse** → 拦截 snapshot 直接编辑 + 编辑前知识提示
 
 ## Key Decisions
 
 ### buffer flush 阈值基于知识条目数（2026-04-23）
 - 初始设计基于"对话轮数"，后发现不准确
 - 按条目数更直接反映知识积累的实质
-- soft=3, hard=10
+- soft=5, compact=8, hard=15
 
 ### 快照禁止直接编辑（2026-04-23）
 - 只允许通过 /evolve 编译产生
@@ -46,5 +46,6 @@
 
 | 行为 | 配置位置 | 配置项 | 说明 |
 |------|---------|--------|------|
-| flush soft 阈值 | stop-flush.sh + config.yaml | FLUSH_THRESHOLD_SOFT | 3 条知识条目 → 建议 flush |
-| flush hard 阈值 | stop-flush.sh + config.yaml | FLUSH_THRESHOLD_HARD | 10 条知识条目 → 强制 flush |
+| flush soft 阈值 | stop-flush.sh + config.yaml | FLUSH_THRESHOLD_SOFT | 5 条知识条目 → 建议 flush |
+| flush compact 阈值 | stop-flush.sh + config.yaml | COMPACT_THRESHOLD | 8 条知识条目 → 触发 /compact |
+| flush hard 阈值 | stop-flush.sh + config.yaml | FLUSH_THRESHOLD_HARD | 15 条知识条目 → 强制 flush

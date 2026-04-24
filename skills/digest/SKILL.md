@@ -8,7 +8,7 @@ category: ai-context
 
 ## When to Trigger
 
-- Stop hook detects buffer has reached flush threshold (3+ entries)
+- Stop hook detects buffer has reached flush threshold (5+ entries)
 - Post-commit hook after git commit
 - User explicitly invokes this skill
 - Session end with buffered knowledge
