@@ -32,18 +32,56 @@ Lore 是一套**自动知识积累机制**：
 
 ## 快速开始
 
-### 1. 安装
+### 1. 克隆 Lore
 
 ```bash
-# 克隆仓库
 git clone https://github.com/koersliven/Lore.git
+```
 
-# 在你的项目中安装
+### 2. 在你的项目中安装
+
+#### Claude Code
+
+```bash
 cd your-project
 bash /path/to/Lore/hooks/install.sh
 ```
 
-### 2. 初始化知识库
+这会：
+- 创建 `.lore-hooks/` 目录，复制所有 hook 脚本
+- 修改 `.claude/settings.json`，注入 hooks
+- 配置自动触发机制
+
+#### Cursor
+
+```bash
+# 1. 安装 hooks（同上）
+cd your-project
+bash /path/to/Lore/hooks/install.sh
+
+# 2. 手动配置 Cursor 读取知识
+# 在项目根目录创建 .cursorrules，添加：
+```
+
+```markdown
+# Lore 知识库
+
+读取 .ai-context/snapshot.md 获得项目理解。
+读取 .ai-context/increments/ 获得知识增量。
+```
+
+#### Codex / 其他工具
+
+```bash
+# 1. 安装 hooks
+bash /path/to/Lore/hooks/install.sh
+
+# 2. 在工具的配置文件中添加：
+# - 读取 .ai-context/snapshot.md 作为项目上下文
+# - 配置 git commit 后执行 .lore-hooks/post-commit-digest.sh
+```
+
+### 3. 初始化知识库
 
 ```
 /init-context
@@ -51,9 +89,25 @@ bash /path/to/Lore/hooks/install.sh
 
 Agent 会问你 5 类问题：外部依赖、配置、数据层、业务背景、隐式契约。
 
-### 3. 正常开发
+### 4. 正常开发
 
 什么都不用做。你在对话中说的 WHY、约束、架构，会自动被记录。
+
+### 5. 验证安装
+
+```bash
+# 检查 hooks 是否安装成功
+ls .lore-hooks/
+
+# 应该看到：
+# install.sh
+# post-commit-digest.sh
+# pre-edit-guard.sh
+# session-end-flush.sh
+# session-start.sh
+# snapshot-guard.sh
+# stop-flush.sh
+```
 
 ## 目录结构
 
