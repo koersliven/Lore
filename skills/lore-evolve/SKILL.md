@@ -1,5 +1,5 @@
 ---
-name: evolve
+name: lore-evolve
 description: Compile knowledge increments into project snapshot with conflict detection
 category: ai-context
 ---

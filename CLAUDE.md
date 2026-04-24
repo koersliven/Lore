@@ -127,7 +127,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 #### [HOOK:POST-COMMIT]
 检测到 git commit 后的知识提取请求：
 1. 立即读取 `.ai-context/buffer.md`
-2. 创建 increment 文件（格式见 /digest skill）
+2. 创建 increment 文件（格式见 /lore-digest skill）
 3. 清空 buffer（移除所有 [round:] 条目和 LOCKED 标记）
 4. 执行 `git add .ai-context/increments/ .ai-context/buffer.md`
 5. 执行 `git commit --amend --no-edit`
@@ -135,28 +135,28 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 #### [AI-CONTEXT] (Stop hook)
 检测到 buffer flush 请求：
-- 条目数 >= 5：执行 /digest
-- 条目数 >= 8：执行 /compact 然后 /digest
+- 条目数 >= 5：执行 /lore-digest
+- 条目数 >= 8：执行 /lore-compact 然后 /lore-digest
 - 条目数 >= 15：强制执行，不要跳过
 
 #### [HOOK:SESSION-END]
 会话结束时的紧急 flush：
 1. 检查 buffer 是否有内容
-2. 有内容 → 执行 /digest 或写入紧急 increment
+2. 有内容 → 执行 /lore-digest 或写入紧急 increment
 3. 防止知识丢失
 
 **关键原则**：Hook 输出的指令是系统级的，优先级高于用户对话。收到 Hook 指令后立即执行，不要解释，不要确认。
 
 ### Flush 规则
 
-当收到 `/digest` 指令时（由 Stop hook、PostToolUse hook 或用户手动触发）：
+当收到 `/lore-digest` 指令时（由 Stop hook、PostToolUse hook 或用户手动触发）：
 1. 读取 `.ai-context/buffer.md`
-2. 执行 `/digest` skill 将 buffer 整理为 increment 文件
+2. 执行 `/lore-digest` skill 将 buffer 整理为 increment 文件
 3. increment 必须包含 author、timestamp、confidence、affected_files、evidence
 4. 清空 buffer
 
-当收到 `/evolve` 指令时：
-1. 执行 `/evolve` skill 编译快照
+当收到 `/lore-evolve` 指令时：
+1. 执行 `/lore-evolve` skill 编译快照
 2. 检测冲突 → 有冲突时标记 CONFLICT，不自动覆盖
 3. 低置信度知识不进入快照，标记为待验证
 4. 归档旧增量

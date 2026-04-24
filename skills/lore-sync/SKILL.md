@@ -1,5 +1,5 @@
 ---
-name: sync
+name: lore-sync
 description: Auto-scan project structure and sync L1 knowledge layer with codebase
 category: ai-context
 ---

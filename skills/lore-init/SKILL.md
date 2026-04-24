@@ -1,5 +1,5 @@
 ---
-name: init-context
+name: lore-init
 description: Bootstrap AI project context through guided questioning with source tracing
 category: ai-context
 ---

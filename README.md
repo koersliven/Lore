@@ -84,7 +84,7 @@ bash /path/to/Lore/hooks/install.sh
 ### 3. 初始化知识库
 
 ```
-/init-context
+/lore-init
 ```
 
 Agent 会问你 5 类问题：外部依赖、配置、数据层、业务背景、隐式契约。
@@ -127,7 +127,7 @@ Lore 将知识分为三层，各有不同的来源和管理方式：
 
 | 层级 | 名称 | 来源 | 内容 | 更新方式 |
 |------|------|------|------|---------|
-| **L1** | 结构层 | 代码扫描 | 模块、入口、依赖 | `/sync` 自动扫描 |
+| **L1** | 结构层 | 代码扫描 | 模块、入口、依赖 | `/lore-sync` 自动扫描 |
 | **L2** | 约束层 | 对话沉淀 | 不可违背的规则 | 需人工确认提升 |
 | **L3** | 过程层 | 对话流出 | WHY、决策、流程 | 自动积累 |
 
@@ -157,13 +157,13 @@ Lore 将知识分为三层，各有不同的来源和管理方式：
                         │ 触发条件: 条目>=5 / 时间>=20min / commit
                         ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                    /digest → increments/                         │
+│                    /lore-digest → increments/                         │
 │                      (知识增量文件)                               │
 └───────────────────────┬─────────────────────────────────────────┘
                         │ 触发条件: increments>=3
                         ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                    /evolve → snapshot.md                         │
+│                    /lore-evolve → snapshot.md                         │
 │                      (项目全景快照)                               │
 └───────────────────────┬─────────────────────────────────────────┘
                         │ git push
@@ -183,12 +183,12 @@ Lore 有多重自动触发，确保知识不丢失：
 
 | 触发条件 | 动作 | 说明 |
 |---------|------|------|
-| Buffer 条目 >= 5 | `/digest` | 建议刷新 |
-| Buffer 条目 >= 8 | `/compact` + `/digest` | 压缩后刷新 |
+| Buffer 条目 >= 5 | `/lore-digest` | 建议刷新 |
+| Buffer 条目 >= 8 | `/lore-compact` + `/lore-digest` | 压缩后刷新 |
 | Buffer 条目 >= 15 | 强制执行 | 防止丢失 |
-| **时间 >= 20分钟** | `/digest` | 长对话保护 |
+| **时间 >= 20分钟** | `/lore-digest` | 长对话保护 |
 | git commit | 提取知识 | 随代码提交 |
-| 未归档 increments >= 3 | `/evolve` | 编译快照 |
+| 未归档 increments >= 3 | `/lore-evolve` | 编译快照 |
 
 **优先级**：evolve > compact > digest
 
@@ -196,14 +196,14 @@ Lore 有多重自动触发，确保知识不丢失：
 
 | Skill | 作用 | 触发方式 |
 |-------|------|---------|
-| `/init-context` | 0→1 引导式问答 | 手动 |
-| `/digest` | buffer → increment | 自动/手动 |
-| `/compact` | 知识压缩合并 | 自动/手动 |
-| `/evolve` | 编译 snapshot | 自动/手动 |
-| `/health` | 知识健康校验 | 自动（SessionStart） |
-| `/sync` | L1 结构扫描 | 手动 |
-| `/constraint` | L2 约束管理 | 手动 |
-| `/import` | 文档/重型知识导入 | 手动 |
+| `/lore-init` | 0→1 引导式问答 | 手动 |
+| `/lore-digest` | buffer → increment | 自动/手动 |
+| `/lore-compact` | 知识压缩合并 | 自动/手动 |
+| `/lore-evolve` | 编译 snapshot | 自动/手动 |
+| `/lore-health` | 知识健康校验 | 自动（SessionStart） |
+| `/lore-sync` | L1 结构扫描 | 手动 |
+| `/lore-constraint` | L2 约束管理 | 手动 |
+| `/lore-import` | 文档/重型知识导入 | 手动 |
 
 ## Hooks（7 个触发器）
 
@@ -237,8 +237,8 @@ Lore 支持多种知识输入方式，兼顾零散对话和重型文档：
 | 来源 | 密度 | 方式 | 特点 |
 |------|------|------|------|
 | **对话** | 低 | 自动提取 | 零散、实时、过程性 |
-| **文档** | 高 | `/import` | 结构化、完整、权威 |
-| **手动** | 高 | `/import` | 精炼、高价值 |
+| **文档** | 高 | `/lore-import` | 结构化、完整、权威 |
+| **手动** | 高 | `/lore-import` | 精炼、高价值 |
 
 ### 对话知识
 
@@ -247,8 +247,8 @@ Lore 支持多种知识输入方式，兼顾零散对话和重型文档：
 ### 文档导入
 
 ```
-/import docs/architecture.md    # 导入架构文档
-/import docs/api/               # 批量导入 API 文档
+/lore-import docs/architecture.md    # 导入架构文档
+/lore-import docs/api/               # 批量导入 API 文档
 ```
 
 支持导入：
@@ -260,7 +260,7 @@ Lore 支持多种知识输入方式，兼顾零散对话和重型文档：
 ### 手动输入
 
 ```
-/import
+/lore-import
 
 [DECISION] 订单服务使用 TDDL 分库分表
 原因: 单表数据量超过 1 亿
@@ -345,7 +345,7 @@ Agent 识别: [CONSTRAINT] 订单-库存解耦，必须通过 MQ
 | 团队共享 | 手动 | 手动 | ✅ git 原生 |
 | 版本化 | ✅ | ✅ | ✅ |
 | 记录 WHY | ❌ | ❌ | ✅ |
-| 知识校验 | ❌ | ❌ | ✅ /health |
+| 知识校验 | ❌ | ❌ | ✅ /lore-health |
 
 ## 项目状态
 
@@ -354,10 +354,10 @@ Agent 识别: [CONSTRAINT] 订单-库存解耦，必须通过 MQ
 **已实现**：
 - ✅ 8 个 Skills + 7 个 Hooks
 - ✅ 自动知识提取（对话 + commit）
-- ✅ 文档导入支持（/import）
+- ✅ 文档导入支持（/lore-import）
 - ✅ 多重触发机制（条目数 + 时间 + evolve）
 - ✅ 三层架构（L1/L2/L3）
-- ✅ 知识健康校验（/health）
+- ✅ 知识健康校验（/lore-health）
 - ✅ 来源追溯（author/timestamp/confidence）
 - ✅ 冲突检测（不自动覆盖）
 - ✅ 编辑前防护（提示历史知识）

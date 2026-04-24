@@ -110,7 +110,7 @@ challenged → resolved (冲突解决，标记原因)
 
 ## 冲突标记规范
 
-当 `/evolve` 编译快照时，发现新知识与已有快照矛盾：
+当 `/lore-evolve` 编译快照时，发现新知识与已有快照矛盾：
 
 ```markdown
 ### [CONFLICT] <主题>
@@ -140,11 +140,11 @@ challenged → resolved (冲突解决，标记原因)
 ## 知识生命周期
 
 ```
-产生 → 写入 buffer → /digest 整理为 increment (含 author + timestamp)
+产生 → 写入 buffer → /lore-digest 整理为 increment (含 author + timestamp)
   → git commit + push → 团队 review
     → review 通过 → verified
     → 有人 challenge → challenged → 人工裁决
-  → /evolve 编译 → 高置信度 → 进入 snapshot
+  → /lore-evolve 编译 → 高置信度 → 进入 snapshot
                 → 低置信度 → 标记待验证
                 → 有冲突 → 标记 CONFLICT，保留双方
 ```

@@ -1,5 +1,5 @@
 ---
-name: constraint
+name: lore-constraint
 description: Manage L2 constraint layer - knowledge stabilization, protection, and indexing
 category: ai-context
 ---

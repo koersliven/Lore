@@ -1,5 +1,5 @@
 ---
-name: compact
+name: lore-compact
 description: Compress knowledge window by merging, deduping, and summarizing buffer entries
 category: ai-context
 ---

@@ -1,5 +1,5 @@
 ---
-name: digest
+name: lore-digest
 description: Flush knowledge buffer into versioned increment files with source tracing
 category: ai-context
 ---

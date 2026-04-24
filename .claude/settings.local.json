@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(mv compact *)",
+      "Bash(mv constraint *)",
+      "Bash(mv digest *)",
+      "Bash(mv evolve *)",
+      "Bash(mv health *)"
+    ]
+  }
+}

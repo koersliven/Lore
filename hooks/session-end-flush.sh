@@ -15,5 +15,5 @@ fi
 CONTENT_LINES=$(grep -cv '^\[LOCKED:\|^\[round:\|^$' "$BUFFER_FILE" 2>/dev/null || echo "0")
 
 if [ "$CONTENT_LINES" -gt 0 ]; then
-  echo "[AI-CONTEXT] Session is ending with ${CONTENT_LINES} lines of unbaked knowledge in buffer. Before ending, execute /digest to flush the buffer into increments. If you cannot flush, write the raw buffer to .ai-context/increments/emergency-$(date '+%Y%m%d-%H%M%S').md. Do not let this knowledge be lost."
+  echo "[AI-CONTEXT] Session is ending with ${CONTENT_LINES} lines of unbaked knowledge in buffer. Before ending, execute /lore-digest to flush the buffer into increments. If you cannot flush, write the raw buffer to .ai-context/increments/emergency-$(date '+%Y%m%d-%H%M%S').md. Do not let this knowledge be lost."
 fi

@@ -13,7 +13,7 @@ LAST_FLUSH_FILE="$WORK_DIR/.ai-context/.last-flush-time"
 # Buffer thresholds
 FLUSH_THRESHOLD_SOFT=5    # Suggest flush
 FLUSH_THRESHOLD_HARD=15   # Force flush
-COMPACT_THRESHOLD=8       # Trigger /compact
+COMPACT_THRESHOLD=8       # Trigger /lore-compact
 
 # Evolve thresholds (unarchived increments)
 EVOLVE_THRESHOLD_SOFT=3   # Suggest evolve
@@ -37,12 +37,12 @@ fi
 
 # Check evolve threshold (higher priority than buffer)
 if [ "$UNARCHIVED_INCREMENTS" -ge "$EVOLVE_THRESHOLD_HARD" ]; then
-  echo "[AI-CONTEXT] ${UNARCHIVED_INCREMENTS} unarchived increments detected (hard limit: ${EVOLVE_THRESHOLD_HARD}). Execute /evolve NOW to compile snapshot and archive old increments. This is urgent — snapshot is stale. Do not ask the user for confirmation."
+  echo "[AI-CONTEXT] ${UNARCHIVED_INCREMENTS} unarchived increments detected (hard limit: ${EVOLVE_THRESHOLD_HARD}). Execute /lore-evolve NOW to compile snapshot and archive old increments. This is urgent — snapshot is stale. Do not ask the user for confirmation."
   exit 0
 fi
 
 if [ "$UNARCHIVED_INCREMENTS" -ge "$EVOLVE_THRESHOLD_SOFT" ]; then
-  echo "[AI-CONTEXT] ${UNARCHIVED_INCREMENTS} unarchived increments accumulated. Execute /evolve to compile snapshot and archive. This is automated — do not ask the user for confirmation."
+  echo "[AI-CONTEXT] ${UNARCHIVED_INCREMENTS} unarchived increments accumulated. Execute /lore-evolve to compile snapshot and archive. This is automated — do not ask the user for confirmation."
   exit 0
 fi
 
@@ -75,21 +75,21 @@ fi
 
 # Priority: hard > compact > time > soft
 if [ "$ENTRIES" -ge "$FLUSH_THRESHOLD_HARD" ]; then
-  echo "[AI-CONTEXT] Buffer has ${ENTRIES} knowledge entries (hard limit: ${FLUSH_THRESHOLD_HARD}). Execute /compact to compress and /digest to flush buffer into increments. This is urgent — knowledge will be lost if session ends. Do not ask the user for confirmation, just execute /compact and /digest."
+  echo "[AI-CONTEXT] Buffer has ${ENTRIES} knowledge entries (hard limit: ${FLUSH_THRESHOLD_HARD}). Execute /lore-compact to compress and /lore-digest to flush buffer into increments. This is urgent — knowledge will be lost if session ends. Do not ask the user for confirmation, just execute /lore-compact and /lore-digest."
   exit 0
 fi
 
 if [ "$ENTRIES" -ge "$COMPACT_THRESHOLD" ]; then
-  echo "[AI-CONTEXT] Buffer has ${ENTRIES} knowledge entries accumulated. Execute /compact to compress knowledge, then /digest to flush. This is automated — do not ask the user for confirmation."
+  echo "[AI-CONTEXT] Buffer has ${ENTRIES} knowledge entries accumulated. Execute /lore-compact to compress knowledge, then /lore-digest to flush. This is automated — do not ask the user for confirmation."
   exit 0
 fi
 
 if [ "$TIME_TRIGGERED" = true ]; then
-  echo "[AI-CONTEXT] ${TIME_THRESHOLD_MINUTES} minutes elapsed since last flush. Buffer has ${ENTRIES} entries. Execute /digest to flush into increments. This is automated — do not ask the user for confirmation."
+  echo "[AI-CONTEXT] ${TIME_THRESHOLD_MINUTES} minutes elapsed since last flush. Buffer has ${ENTRIES} entries. Execute /lore-digest to flush into increments. This is automated — do not ask the user for confirmation."
   exit 0
 fi
 
 if [ "$ENTRIES" -ge "$FLUSH_THRESHOLD_SOFT" ]; then
-  echo "[AI-CONTEXT] Buffer has ${ENTRIES} knowledge entries accumulated. Execute /digest to flush into increments and clear the buffer. This is automated — do not ask the user for confirmation."
+  echo "[AI-CONTEXT] Buffer has ${ENTRIES} knowledge entries accumulated. Execute /lore-digest to flush into increments and clear the buffer. This is automated — do not ask the user for confirmation."
   exit 0
 fi

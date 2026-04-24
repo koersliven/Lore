@@ -1,5 +1,5 @@
 ---
-name: health
+name: lore-health
 description: Validate knowledge health by cross-checking against code and detecting stale/contradicted entries
 category: ai-context
 ---

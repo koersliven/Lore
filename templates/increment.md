@@ -1,6 +1,6 @@
 # Increment Template
 
-> Used by /digest to create new increment files.
+> Used by /lore-digest to create new increment files.
 
 ---
 

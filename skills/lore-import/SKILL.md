@@ -1,5 +1,5 @@
 ---
-name: import
+name: lore-import
 description: Import structured knowledge from documents, specs, or manual input
 category: ai-context
 ---

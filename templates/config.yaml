@@ -1,6 +1,6 @@
 version: "0.1"
 project:
-  name: ""  # Will be filled during /init-context
+  name: ""  # Will be filled during /lore-init
   description: ""
   tech_stack: []
 
@@ -9,7 +9,7 @@ knowledge:
   buffer:
     flush_threshold_soft: 5    # Knowledge entries after which flush is suggested
     flush_threshold_hard: 15   # Knowledge entries after which flush is forced
-    compact_threshold: 8       # Knowledge entries to trigger /compact
+    compact_threshold: 8       # Knowledge entries to trigger /lore-compact
     max_buffer_size: 50        # Max lines before forced flush (safety net)
 
   # Knowledge categories to extract
