@@ -60,3 +60,4 @@
 | /evolve | increment → 编译 snapshot + 归档 |
 | /health | 知识健康校验（自动检测 stale/contradicted） |
 | /sync | L1 结构层自动扫描（模块、入口、依赖） |
+| /constraint | L2 约束层管理（沉淀、保护、索引） |
