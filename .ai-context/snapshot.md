@@ -59,3 +59,4 @@
 | /compact | 知识窗口压缩（合并、去重、摘要） |
 | /evolve | increment → 编译 snapshot + 归档 |
 | /health | 知识健康校验（自动检测 stale/contradicted） |
+| /sync | L1 结构层自动扫描（模块、入口、依赖） |
