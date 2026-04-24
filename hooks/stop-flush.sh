@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
 # stop-flush.sh — Stop hook: detects if buffer needs flushing or evolve needed
 # Triggered after every agent turn completion.
-# Checks both buffer entries and unarchived increments.
+# Checks: buffer entries, unarchived increments, and time elapsed.
 
 set -euo pipefail
 
 WORK_DIR="${CLAUDE_WORKING_DIRECTORY:-$(pwd)}"
 BUFFER_FILE="$WORK_DIR/.ai-context/buffer.md"
 INCREMENT_DIR="$WORK_DIR/.ai-context/increments"
+LAST_FLUSH_FILE="$WORK_DIR/.ai-context/.last-flush-time"
 
 # Buffer thresholds
 FLUSH_THRESHOLD_SOFT=5    # Suggest flush
@@ -17,6 +18,9 @@ COMPACT_THRESHOLD=8       # Trigger /compact
 # Evolve thresholds (unarchived increments)
 EVOLVE_THRESHOLD_SOFT=3   # Suggest evolve
 EVOLVE_THRESHOLD_HARD=5   # Force evolve
+
+# Time threshold (minutes)
+TIME_THRESHOLD_MINUTES=20 # Auto flush after 20 minutes
 
 # Check buffer lock first
 if [ -f "$BUFFER_FILE" ] && grep -q '^\[LOCKED:' "$BUFFER_FILE" 2>/dev/null; then
@@ -50,6 +54,26 @@ fi
 ENTRIES=$(grep -c '^\[round:' "$BUFFER_FILE" 2>/dev/null || echo "0")
 ENTRIES=$(echo "$ENTRIES" | head -1 | tr -d '[:space:]')
 
+# Check time elapsed since last flush
+TIME_TRIGGERED=false
+if [ "$ENTRIES" -gt 0 ]; then
+  CURRENT_TIME=$(date +%s)
+
+  if [ -f "$LAST_FLUSH_FILE" ]; then
+    LAST_FLUSH=$(cat "$LAST_FLUSH_FILE" 2>/dev/null || echo "0")
+    ELAPSED_SECONDS=$((CURRENT_TIME - LAST_FLUSH))
+    ELAPSED_MINUTES=$((ELAPSED_SECONDS / 60))
+
+    if [ "$ELAPSED_MINUTES" -ge "$TIME_THRESHOLD_MINUTES" ]; then
+      TIME_TRIGGERED=true
+    fi
+  else
+    # No last flush record, create one
+    echo "$CURRENT_TIME" > "$LAST_FLUSH_FILE"
+  fi
+fi
+
+# Priority: hard > compact > time > soft
 if [ "$ENTRIES" -ge "$FLUSH_THRESHOLD_HARD" ]; then
   echo "[AI-CONTEXT] Buffer has ${ENTRIES} knowledge entries (hard limit: ${FLUSH_THRESHOLD_HARD}). Execute /compact to compress and /digest to flush buffer into increments. This is urgent — knowledge will be lost if session ends. Do not ask the user for confirmation, just execute /compact and /digest."
   exit 0
@@ -57,6 +81,11 @@ fi
 
 if [ "$ENTRIES" -ge "$COMPACT_THRESHOLD" ]; then
   echo "[AI-CONTEXT] Buffer has ${ENTRIES} knowledge entries accumulated. Execute /compact to compress knowledge, then /digest to flush. This is automated — do not ask the user for confirmation."
+  exit 0
+fi
+
+if [ "$TIME_TRIGGERED" = true ]; then
+  echo "[AI-CONTEXT] ${TIME_THRESHOLD_MINUTES} minutes elapsed since last flush. Buffer has ${ENTRIES} entries. Execute /digest to flush into increments. This is automated — do not ask the user for confirmation."
   exit 0
 fi
 

@@ -93,15 +93,24 @@ If an increment for today already exists, append to it (don't overwrite).
 
 Overwrite `.ai-context/buffer.md` with an empty file.
 
-### Step 7: Remove Lock Markers
+### Step 7: Update Last Flush Time
+
+Record the current timestamp for time-based flush triggers:
+
+```bash
+date +%s > .ai-context/.last-flush-time
+```
+
+### Step 8: Remove Lock Markers
 
 If the buffer had a `[LOCKED:commit]` marker (from post-commit hook), ensure it's cleared.
 
-### Step 8: Git Add
+### Step 9: Git Add
 
 ```bash
 git add .ai-context/increments/
 git add .ai-context/buffer.md
+git add .ai-context/.last-flush-time
 ```
 
 If called from post-commit hook context, also:
