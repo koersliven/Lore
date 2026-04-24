@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # post-commit-digest.sh — PostToolUse hook: triggered after git commit
-# Forces agent to extract and flush knowledge after commit.
+# Directly extracts knowledge from buffer and writes increment.
+# Does NOT rely on agent to execute instructions.
 
 set -euo pipefail
 
@@ -16,43 +17,79 @@ if ! echo "$COMMAND" | grep -q "git commit"; then
   exit 0
 fi
 
-# Check if it was successful (heuristic: look for success indicators in result)
+# Check if it was successful
 TOOL_RESULT=$(echo "$INPUT" | jq -r '.tool_result // empty' 2>/dev/null || echo "")
 if echo "$TOOL_RESULT" | grep -qi "error\\|failed\\|nothing to commit"; then
   exit 0
 fi
 
-# Lock the buffer to prevent double-flush from stop hook
 WORK_DIR="${CLAUDE_WORKING_DIRECTORY:-$(pwd)}"
 BUFFER_FILE="$WORK_DIR/.ai-context/buffer.md"
 INCREMENT_DIR="$WORK_DIR/.ai-context/increments"
 
-if [ -f "$BUFFER_FILE" ]; then
-  # Insert lock marker at the top if not already locked
-  if ! grep -q '^\[LOCKED:' "$BUFFER_FILE" 2>/dev/null; then
-    LOCK_LINE="[LOCKED:commit at $(date '+%Y-%m-%d %H:%M:%S')]"
-    sed -i '' "1s/^/${LOCK_LINE}\n/" "$BUFFER_FILE" 2>/dev/null || true
-  fi
+if [ ! -f "$BUFFER_FILE" ]; then
+  exit 0
 fi
 
 # Count knowledge entries in buffer
 ENTRIES=$(grep -c '^\[round:' "$BUFFER_FILE" 2>/dev/null || echo "0")
 
-if [ "$ENTRIES" -gt 0 ]; then
-  # Output as a user-like message that agent must act on
-  # Using special format that signals mandatory action
-  cat <<INJECT
-[HOOK:POST-COMMIT] Knowledge extraction required. Buffer has ${ENTRIES} entries.
-
-IMMEDIATE ACTION REQUIRED (do not ask for confirmation):
-
-1. Read .ai-context/buffer.md to see all knowledge entries
-2. Create increment file: .ai-context/increments/$(date '+%Y-%m-%d')_commit-$(date '+%H%M%S').md
-3. Write structured knowledge to increment (use /digest format)
-4. Clear buffer.md (remove all [round:] entries and LOCKED marker)
-5. Run: git add .ai-context/increments/ .ai-context/buffer.md
-6. Run: git commit --amend --no-edit
-
-This is mandatory. Execute now.
-INJECT
+if [ "$ENTRIES" -eq 0 ]; then
+  exit 0
 fi
+
+# Lock the buffer
+if ! grep -q '^\[LOCKED:' "$BUFFER_FILE" 2>/dev/null; then
+  LOCK_LINE="[LOCKED:commit at $(date '+%Y-%m-%d %H:%M:%S')]"
+  sed -i '' "1s/^/${LOCK_LINE}\n/" "$BUFFER_FILE" 2>/dev/null || true
+fi
+
+# Generate increment file
+INCREMENT_FILE="$INCREMENT_DIR/$(date '+%Y-%m-%d')_commit-$(date '+%H%M%S').md"
+
+# Extract commit message from the command
+COMMIT_MSG=$(echo "$COMMAND" | sed -n 's/.*-m["'"'"']*\([^"'"'"']*\).*/\1/p' | head -1)
+COMMIT_MSG="${COMMIT_MSG:-commit}"
+
+# Write increment file
+cat > "$INCREMENT_FILE" << INCREMENT
+# $(date '+%Y-%m-%d') commit-knowledge
+
+## Meta
+- author: auto-extracted
+- timestamp: $(date '+%Y-%m-%d %H:%M:%S')
+- trigger: post-commit-hook
+- confidence: medium
+
+## Affected Files
+- See buffer entries for affected files
+
+## Changes
+- Commit: ${COMMIT_MSG}
+
+## Knowledge Extracted from Buffer
+
+$(grep -A3 '^\[round:' "$BUFFER_FILE")
+
+## Evidence
+- 来源: 开发对话，commit 时自动提取
+- 验证状态: unverified
+INCREMENT
+
+# Clear buffer (keep header, remove entries and lock)
+cat > "$BUFFER_FILE" << 'BUFFER'
+# Buffer — AI Context knowledge accumulator
+
+> This file is managed automatically by the AI Context framework.
+> Do not edit manually. Cleared after each /digest flush.
+BUFFER
+
+# Stage increment
+cd "$WORK_DIR"
+git add "$INCREMENT_FILE" "$BUFFER_FILE" 2>/dev/null || true
+
+# Output summary for agent to see
+echo "[AI-CONTEXT] Post-commit knowledge extraction complete:"
+echo "  - Extracted ${ENTRIES} knowledge entries"
+echo "  - Increment: $(basename "$INCREMENT_FILE")"
+echo "  - Run: git commit --amend --no-edit  (to include increment in commit)"
