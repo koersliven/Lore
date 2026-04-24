@@ -44,13 +44,27 @@ git clone https://github.com/koersliven/Lore.git
 
 ```bash
 cd your-project
-bash /path/to/Lore/hooks/install.sh
+bash /path/to/Lore/hooks/install.sh --global
 ```
 
 这会：
 - 创建 `.lore-hooks/` 目录，复制所有 hook 脚本
 - 修改 `.claude/settings.json`，注入 hooks
+- **注入规则到 `~/.claude/CLAUDE.md`**（不覆盖原有内容）
 - 配置自动触发机制
+
+**`--global` 参数的作用**：
+
+Lore 规则会注入到你**全局**的 `~/.claude/CLAUDE.md`，而不是项目级别的 CLAUDE.md。这样：
+- 不覆盖你项目原有的 CLAUDE.md
+- 所有项目都能使用 Lore 框架
+- Claude Code 能理解并正确使用 Lore
+
+**卸载全局规则**：
+
+```bash
+bash /path/to/Lore/hooks/install.sh --uninstall-global
+```
 
 #### Cursor
 
