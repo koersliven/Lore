@@ -33,6 +33,7 @@ fi
 
 # Count knowledge entries in buffer
 ENTRIES=$(grep -c '^\[round:' "$BUFFER_FILE" 2>/dev/null || echo "0")
+ENTRIES=$(echo "$ENTRIES" | head -1 | tr -d '[:space:]')
 
 if [ "$ENTRIES" -eq 0 ]; then
   exit 0
