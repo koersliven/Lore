@@ -49,3 +49,12 @@
 | flush soft 阈值 | stop-flush.sh + config.yaml | FLUSH_THRESHOLD_SOFT | 5 条知识条目 → 建议 flush |
 | flush compact 阈值 | stop-flush.sh + config.yaml | COMPACT_THRESHOLD | 8 条知识条目 → 触发 /compact |
 | flush hard 阈值 | stop-flush.sh + config.yaml | FLUSH_THRESHOLD_HARD | 15 条知识条目 → 强制 flush
+
+## Skills
+
+| Skill | Purpose |
+|-------|---------|
+| /init-context | 0→1 引导式问答建立初始理解 |
+| /digest | buffer → 结构化 increment |
+| /compact | 知识窗口压缩（合并、去重、摘要） |
+| /evolve | increment → 编译 snapshot + 归档 |
