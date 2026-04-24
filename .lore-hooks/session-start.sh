@@ -9,4 +9,5 @@ SNAPSHOT="$WORK_DIR/.ai-context/snapshot.md"
 
 if [ -f "$SNAPSHOT" ]; then
   echo "[AI-CONTEXT] Project snapshot exists at .ai-context/snapshot.md. Read it now to understand the project's accumulated context before proceeding. This gives you the knowledge from all previous development sessions."
+  echo "[AI-CONTEXT] After reading snapshot, execute /health to validate knowledge freshness. This is automated — do not ask the user for confirmation."
 fi

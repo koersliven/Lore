@@ -58,3 +58,4 @@
 | /digest | buffer → 结构化 increment |
 | /compact | 知识窗口压缩（合并、去重、摘要） |
 | /evolve | increment → 编译 snapshot + 归档 |
+| /health | 知识健康校验（自动检测 stale/contradicted） |
