@@ -338,19 +338,21 @@ ai-friendly-codebase/
 │
 ├── hooks/                          ─────────── 事件驱动触发器
 │   ├── install.sh                  │ 安装到项目的 .claude/settings.json
-│   ├── stop-flush.sh               │ Stop hook: 检测 buffer 轮次 → 触发 flush
+│   ├── stop-flush.sh               │ Stop hook: 检测 buffer/时间/increments
 │   ├── post-commit-digest.sh       │ PostToolUse hook: commit 后提取知识
 │   ├── session-end-flush.sh        │ SessionEnd hook: 紧急 flush 防丢失
-│   ├── session-start.sh            │ SessionStart hook: 加载快照
-│   └── snapshot-guard.sh           │ PreToolUse hook: 保护快照不被直接编辑
+│   ├── session-start.sh            │ SessionStart hook: 加载快照 + 检查 evolve
+│   ├── snapshot-guard.sh           │ PreToolUse hook: 保护快照不被直接编辑
+│   └── pre-edit-guard.sh           │ PreToolUse hook: 编辑前提示知识历史
 │
-├── skills/                         ─────────── Agent 技能
+├── skills/                         ─────────── Agent 技能（7 个）
 │   ├── init-context/               │ 0→1 知识初始化：引导式问答 + 生成初始快照
-│   │   └── SKILL.md                │
 │   ├── digest/                     │ 知识提取：buffer → 结构化 increment
-│   │   └── SKILL.md                │
-│   └── evolve/                     │ 快照编译：increments → snapshot + 归档
-│       └── SKILL.md                │
+│   ├── compact/                    │ 知识压缩：合并、去重、摘要
+│   ├── evolve/                     │ 快照编译：increments → snapshot + 归档
+│   ├── health/                     │ 知识健康校验：检测 stale/contradicted
+│   ├── sync/                       │ L1 结构扫描：模块、入口、依赖
+│   └── constraint/                 │ L2 约束管理：沉淀、保护、索引
 │
 ├── templates/                      ─────────── 模板文件
 │   ├── snapshot.md                 │ 快照模板（/init-context 生成）
