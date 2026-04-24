@@ -175,6 +175,54 @@ Lore 有多重自动触发，确保知识不丢失：
 
 **不记录**：变量重命名、格式调整、纯 bug fix —— 代码 diff 已经表达了。
 
+## 知识识别规则
+
+Lore 会主动识别对话中的架构相关信息，不需要你刻意说"因为..."：
+
+### 外部依赖
+
+| 提到 | 自动记录为 |
+|------|-----------|
+| Diamond / Nacos / Apollo | [EXTERNAL] 配置中心，控制 X 行为 |
+| Tair / Redis | [ARCHITECTURE] 缓存层，存储 X 数据 |
+| HSF / Dubbo | [ARCHITECTURE] RPC 调用，依赖 X 服务 |
+| MetaQ / Kafka | [ARCHITECTURE] 消息队列，X 流程解耦 |
+| TDDL / ShardingSphere | [ARCHITECTURE] 分库分表，规则是 X |
+
+### 配置来源
+
+| 提到 | 自动记录为 |
+|------|-----------|
+| "这个配置在..." | [EXTERNAL] 配置位置和含义 |
+| "改了这个会..." | [CONSTRAINT] 配置变更影响 |
+
+### 数据流向
+
+| 提到 | 自动记录为 |
+|------|-----------|
+| "数据在...里" | [ARCHITECTURE] 数据存储位置 |
+| "这个表..." | [ARCHITECTURE] 表结构/分片规则 |
+
+### 架构边界
+
+| 提到 | 自动记录为 |
+|------|-----------|
+| "这个服务调用..." | [ARCHITECTURE] 服务依赖关系 |
+| "不能直接调用..." | [CONSTRAINT] 架构约束 |
+
+### 示例
+
+```
+你说: "这部分依赖 diamond 配置"
+Agent 识别: [EXTERNAL] Diamond 配置中心，控制超时/开关等行为
+
+你说: "订单数据在 tddl 分库分表"
+Agent 识别: [ARCHITECTURE] 订单存储: TDDL 分库分表，分片键 order_id
+
+你说: "订单不能直接调库存，要走 MQ"
+Agent 识别: [CONSTRAINT] 订单-库存解耦，必须通过 MQ
+```
+
 ## 工作流程示例
 
 ```
