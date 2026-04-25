@@ -134,12 +134,13 @@ if [ -f "$SETTINGS_FILE" ]; then
     echo "Existing hooks found. Merging new Lore hooks..."
 
     NEW_SETTINGS=$(echo "$EXISTING" | jq '
+      def dedup_lore: [.[] | select([.hooks[].command] | any(contains("lore-hooks")) | not)];
       .hooks = .hooks // {}
-      | .hooks.Stop = (.hooks.Stop // []) + [{"matcher":"","hooks":[{"type":"command","command":"bash .lore-hooks/stop-flush.sh","timeout":10}]}]
-      | .hooks.PostToolUse = (.hooks.PostToolUse // []) + [{"matcher":"","hooks":[{"type":"command","command":"bash .lore-hooks/post-commit-digest.sh","timeout":30}]}]
-      | .hooks.SessionStart = (.hooks.SessionStart // []) + [{"matcher":"","hooks":[{"type":"command","command":"bash .lore-hooks/session-start.sh","timeout":5}]}]
-      | .hooks.SessionEnd = (.hooks.SessionEnd // []) + [{"matcher":"","hooks":[{"type":"command","command":"bash .lore-hooks/session-end-flush.sh","timeout":15}]}]
-      | .hooks.PreToolUse = (.hooks.PreToolUse // []) + [
+      | .hooks.Stop = ((.hooks.Stop // []) | dedup_lore) + [{"matcher":"","hooks":[{"type":"command","command":"bash .lore-hooks/stop-flush.sh","timeout":10}]}]
+      | .hooks.PostToolUse = ((.hooks.PostToolUse // []) | dedup_lore) + [{"matcher":"","hooks":[{"type":"command","command":"bash .lore-hooks/post-commit-digest.sh","timeout":30}]}]
+      | .hooks.SessionStart = ((.hooks.SessionStart // []) | dedup_lore) + [{"matcher":"","hooks":[{"type":"command","command":"bash .lore-hooks/session-start.sh","timeout":5}]}]
+      | .hooks.SessionEnd = ((.hooks.SessionEnd // []) | dedup_lore) + [{"matcher":"","hooks":[{"type":"command","command":"bash .lore-hooks/session-end-flush.sh","timeout":15}]}]
+      | .hooks.PreToolUse = ((.hooks.PreToolUse // []) | dedup_lore) + [
           {"matcher":"","hooks":[{"type":"command","command":"bash .lore-hooks/snapshot-guard.sh","timeout":5}]},
           {"matcher":"","hooks":[{"type":"command","command":"bash .lore-hooks/pre-edit-guard.sh","timeout":5}]}
         ]
