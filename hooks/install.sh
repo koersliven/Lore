@@ -135,13 +135,13 @@ if [ -f "$SETTINGS_FILE" ]; then
 
     NEW_SETTINGS=$(echo "$EXISTING" | jq '
       .hooks = .hooks // {}
-      | .hooks.Stop = (.hooks.Stop // []) + [{"type":"command","command":"bash .lore-hooks/stop-flush.sh","timeout":10}]
-      | .hooks.PostToolUse = (.hooks.PostToolUse // []) + [{"type":"command","command":"bash .lore-hooks/post-commit-digest.sh","timeout":30}]
-      | .hooks.SessionStart = (.hooks.SessionStart // []) + [{"type":"command","command":"bash .lore-hooks/session-start.sh","timeout":5}]
-      | .hooks.SessionEnd = (.hooks.SessionEnd // []) + [{"type":"command","command":"bash .lore-hooks/session-end-flush.sh","timeout":15}]
+      | .hooks.Stop = (.hooks.Stop // []) + [{"matcher":"","hooks":[{"type":"command","command":"bash .lore-hooks/stop-flush.sh","timeout":10}]}]
+      | .hooks.PostToolUse = (.hooks.PostToolUse // []) + [{"matcher":"","hooks":[{"type":"command","command":"bash .lore-hooks/post-commit-digest.sh","timeout":30}]}]
+      | .hooks.SessionStart = (.hooks.SessionStart // []) + [{"matcher":"","hooks":[{"type":"command","command":"bash .lore-hooks/session-start.sh","timeout":5}]}]
+      | .hooks.SessionEnd = (.hooks.SessionEnd // []) + [{"matcher":"","hooks":[{"type":"command","command":"bash .lore-hooks/session-end-flush.sh","timeout":15}]}]
       | .hooks.PreToolUse = (.hooks.PreToolUse // []) + [
-          {"type":"command","command":"bash .lore-hooks/snapshot-guard.sh","timeout":5},
-          {"type":"command","command":"bash .lore-hooks/pre-edit-guard.sh","timeout":5}
+          {"matcher":"","hooks":[{"type":"command","command":"bash .lore-hooks/snapshot-guard.sh","timeout":5}]},
+          {"matcher":"","hooks":[{"type":"command","command":"bash .lore-hooks/pre-edit-guard.sh","timeout":5}]}
         ]
     ')
     echo "$NEW_SETTINGS" | jq '.' > "$SETTINGS_FILE"
@@ -150,13 +150,13 @@ if [ -f "$SETTINGS_FILE" ]; then
     # Has settings but no hooks section
     NEW_SETTINGS=$(echo "$EXISTING" | jq '
       .hooks = {
-        "Stop": [{"type":"command","command":"bash .lore-hooks/stop-flush.sh","timeout":10}],
-        "PostToolUse": [{"type":"command","command":"bash .lore-hooks/post-commit-digest.sh","timeout":30}],
-        "SessionStart": [{"type":"command","command":"bash .lore-hooks/session-start.sh","timeout":5}],
-        "SessionEnd": [{"type":"command","command":"bash .lore-hooks/session-end-flush.sh","timeout":15}],
+        "Stop": [{"matcher":"","hooks":[{"type":"command","command":"bash .lore-hooks/stop-flush.sh","timeout":10}]}],
+        "PostToolUse": [{"matcher":"","hooks":[{"type":"command","command":"bash .lore-hooks/post-commit-digest.sh","timeout":30}]}],
+        "SessionStart": [{"matcher":"","hooks":[{"type":"command","command":"bash .lore-hooks/session-start.sh","timeout":5}]}],
+        "SessionEnd": [{"matcher":"","hooks":[{"type":"command","command":"bash .lore-hooks/session-end-flush.sh","timeout":15}]}],
         "PreToolUse": [
-          {"type":"command","command":"bash .lore-hooks/snapshot-guard.sh","timeout":5},
-          {"type":"command","command":"bash .lore-hooks/pre-edit-guard.sh","timeout":5}
+          {"matcher":"","hooks":[{"type":"command","command":"bash .lore-hooks/snapshot-guard.sh","timeout":5}]},
+          {"matcher":"","hooks":[{"type":"command","command":"bash .lore-hooks/pre-edit-guard.sh","timeout":5}]}
         ]
       }
     ')
@@ -169,20 +169,20 @@ else
 {
   "hooks": {
     "Stop": [
-      {"type": "command", "command": "bash .lore-hooks/stop-flush.sh", "timeout": 10}
+      {"matcher": "", "hooks": [{"type": "command", "command": "bash .lore-hooks/stop-flush.sh", "timeout": 10}]}
     ],
     "PostToolUse": [
-      {"type": "command", "command": "bash .lore-hooks/post-commit-digest.sh", "timeout": 30}
+      {"matcher": "", "hooks": [{"type": "command", "command": "bash .lore-hooks/post-commit-digest.sh", "timeout": 30}]}
     ],
     "SessionStart": [
-      {"type": "command", "command": "bash .lore-hooks/session-start.sh", "timeout": 5}
+      {"matcher": "", "hooks": [{"type": "command", "command": "bash .lore-hooks/session-start.sh", "timeout": 5}]}
     ],
     "SessionEnd": [
-      {"type": "command", "command": "bash .lore-hooks/session-end-flush.sh", "timeout": 15}
+      {"matcher": "", "hooks": [{"type": "command", "command": "bash .lore-hooks/session-end-flush.sh", "timeout": 15}]}
     ],
     "PreToolUse": [
-      {"type": "command", "command": "bash .lore-hooks/snapshot-guard.sh", "timeout": 5},
-      {"type": "command", "command": "bash .lore-hooks/pre-edit-guard.sh", "timeout": 5}
+      {"matcher": "", "hooks": [{"type": "command", "command": "bash .lore-hooks/snapshot-guard.sh", "timeout": 5}]},
+      {"matcher": "", "hooks": [{"type": "command", "command": "bash .lore-hooks/pre-edit-guard.sh", "timeout": 5}]}
     ]
   }
 }
