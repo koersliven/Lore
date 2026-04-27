@@ -11,6 +11,7 @@ set -euo pipefail
 # Determine framework directory
 FRAMEWORK_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 SRC_HOOKS_DIR="$FRAMEWORK_DIR/hooks"
+SRC_SKILLS_DIR="$FRAMEWORK_DIR/skills"
 GLOBAL_INJECT_TEMPLATE="$FRAMEWORK_DIR/templates/global-claude-md-inject.md"
 
 # Parse arguments
@@ -27,6 +28,42 @@ for arg in "$@"; do
 done
 
 PROJECT_ROOT="${PROJECT_ROOT:-$(pwd)}"
+
+# ============================================
+# Function: Register Lore skills globally in ~/.claude/skills/
+# ============================================
+install_global_skills() {
+  GLOBAL_SKILLS_DIR="$HOME/.claude/skills"
+  mkdir -p "$GLOBAL_SKILLS_DIR"
+
+  echo "Registering Lore skills globally..."
+
+  LORE_SKILLS=("lore-init" "lore-digest" "lore-compact" "lore-evolve" "lore-health" "lore-sync" "lore-constraint" "lore-import")
+  INSTALLED=0
+  UPDATED=0
+
+  for skill in "${LORE_SKILLS[@]}"; do
+    SRC_SKILL="$SRC_SKILLS_DIR/$skill"
+    DST_SKILL="$GLOBAL_SKILLS_DIR/$skill"
+
+    if [ ! -d "$SRC_SKILL" ]; then
+      echo "  WARNING: Source skill directory not found: $SRC_SKILL"
+      continue
+    fi
+
+    if [ -d "$DST_SKILL" ]; then
+      # Skill already exists, update it
+      cp -r "$SRC_SKILL"/* "$DST_SKILL/"
+      UPDATED=$((UPDATED + 1))
+    else
+      # New skill, copy it
+      cp -r "$SRC_SKILL" "$DST_SKILL"
+      INSTALLED=$((INSTALLED + 1))
+    fi
+  done
+
+  echo "✓ Skills registered: $INSTALLED new, $UPDATED updated"
+}
 
 # ============================================
 # Function: Inject Lore rules to global CLAUDE.md
@@ -75,6 +112,7 @@ inject_global_claude_md() {
 # ============================================
 uninstall_global_claude_md() {
   GLOBAL_CLAUDE_MD="$HOME/.claude/CLAUDE.md"
+  GLOBAL_SKILLS_DIR="$HOME/.claude/skills"
 
   if [ ! -f "$GLOBAL_CLAUDE_MD" ]; then
     echo "Global CLAUDE.md not found. Nothing to uninstall."
@@ -99,6 +137,20 @@ uninstall_global_claude_md() {
 
   echo "✓ Removed Lore rules from $GLOBAL_CLAUDE_MD"
   echo "  Your other CLAUDE.md content is preserved."
+
+  # Remove global skills
+  LORE_SKILLS=("lore-init" "lore-digest" "lore-compact" "lore-evolve" "lore-health" "lore-sync" "lore-constraint" "lore-import")
+  REMOVED=0
+  for skill in "${LORE_SKILLS[@]}"; do
+    DST_SKILL="$GLOBAL_SKILLS_DIR/$skill"
+    if [ -d "$DST_SKILL" ]; then
+      rm -rf "$DST_SKILL"
+      REMOVED=$((REMOVED + 1))
+    fi
+  done
+  if [ "$REMOVED" -gt 0 ]; then
+    echo "✓ Removed $REMOVED Lore skills from $GLOBAL_SKILLS_DIR"
+  fi
 }
 
 # ============================================
@@ -206,6 +258,8 @@ echo "  PreToolUse    → pre-edit-guard.sh (warn when editing files with knowle
 if [ "$INSTALL_GLOBAL" = true ]; then
   echo ""
   inject_global_claude_md
+  echo ""
+  install_global_skills
 fi
 
 echo ""
