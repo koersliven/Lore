@@ -33,6 +33,32 @@ modules: []
   #   path: "src/web"
   #   role: "HTTP entry points"
 
+# Module discovery configuration
+discovery:
+  enabled: true
+  # Directories that are NOT modules even if they have entry points
+  exclusions:
+    - test
+    - __tests__
+    - spec
+    - fixtures
+    - shared
+    - common
+    - util
+    - helpers
+    - config
+    - node_modules
+    - vendor
+  # File patterns that indicate a directory is a module
+  entry_patterns:
+    - "*Controller.*"
+    - "*Handler.*"
+    - "*Service.*"
+    - "router.*"
+    - "routes.*"
+    - "views.*"
+    - "api.*"
+
 external_types: []
   # - class: "AbilityExpand"
   #   source: "nurture-product-tenant-common.jar"

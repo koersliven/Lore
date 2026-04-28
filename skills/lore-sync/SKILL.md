@@ -202,3 +202,36 @@ Snapshot 现有:
 ```
 
 全量扫描只在用户明确要求时执行。
+
+### Module Discovery (NEW)
+
+当扫描到新的模块边界（有独立入口的目录）时：
+
+```
+1. 检查 .ai-context/modules/_index.md 是否存在
+2. 如果存在：
+   - 比对发现的模块 vs 注册表
+   - 新模块 → 自动注册到 _index.md
+   - 已存在模块 → 更新代码路径（如果变更）
+   - 已消失模块 → 标记 dormant（不删除知识）
+3. 如果不存在：
+   - 记录新模块信息，等待 /lore-evolve 首次编译时触发 /lore-modularize
+```
+
+**注册格式**：
+```markdown
+| {{module-name}} | `src/{{module}}/` | {{inferred purpose}} | active
+```
+
+### L1-to-Module Mapping (NEW)
+
+将扫描结果按模块归类：
+
+```
+1. 对每个 L1 条目，检查关联文件路径
+2. 路径匹配到某个模块目录 → 写入 modules/<name>/knowledge.md 的 L1 章节
+3. 路径不匹配任何模块 → 写入全局 snapshot.md 的 L1 章节
+4. 更新 modules/<name>/knowledge.md 的 Page-to-API Mapping 章节
+```
+
+**关键**：L1 是"代码说了算"，L3 是"人说了算"。`/sync` 只管 L1，不碰 L3。

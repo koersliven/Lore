@@ -19,22 +19,36 @@ Compile all accumulated increment files into a single, coherent `.ai-context/sna
 
 ## Process
 
+### Step 0: Detect Modular Mode
+
+Check if `.ai-context/modules/` directory exists.
+
+- **If no** → Check if this is the first compile with sufficient module-scoped knowledge. If snapshot.md has knowledge entries with file references that can be mapped to code directories, auto-trigger modular partitioning by executing /lore-modularize before proceeding. Then run legacy evolve if no modules were discovered.
+- **If yes** → Run modular evolve path (Steps 1-8 below).
+
 ### Step 1: Read Current State
 
 Read:
 1. `.ai-context/snapshot.md` — current snapshot (may not exist for first compile)
-2. All files in `.ai-context/increments/` — sorted by date (oldest first)
-3. `.ai-context/config.yaml` — project configuration
+2. `.ai-context/modules/_index.md` — module registry (if modular mode)
+3. For each known module, read `modules/<name>/knowledge.md`
+4. All files in `.ai-context/increments/` — sorted by date (oldest first)
+5. For each module, read `modules/<name>/increments/`
+6. `.ai-context/config.yaml` — project configuration
 
-### Step 2: Identify New Increments
+### Step 2: Route Increments by Domain
 
-Determine which increments have NOT yet been compiled into the snapshot.
+For each uncompiled increment (global or per-module):
 
-**Method**: Check if `snapshot.md` mentions each increment file in a "Compiled increments" section at the bottom. Any increment not listed there is new.
+**Determine target**:
+- Has `domain: <module-name>` meta field AND module exists in `_index.md` → target that module's `knowledge.md`
+- No `domain` field but `affected_files` paths match a module's code path → infer domain, target that module
+- No `domain` and no file path match → target global `snapshot.md`
+- `domain` references unknown module → create warning, route to global `snapshot.md`
 
-### Step 3: Conflict Detection
+### Step 3: Conflict Detection (per-target)
 
-For each new increment, check against existing snapshot content:
+For each new increment, check against its target (snapshot.md or modules/<name>/knowledge.md):
 
 **Conflict scenarios**:
 - A DECISION contradicts an existing decision (e.g., different values for the same config)
@@ -54,11 +68,11 @@ For each new increment, check against existing snapshot content:
 - Do NOT auto-resolve conflicts
 - Preserve both the old and new entries
 - Mark as `[CONFLICT] pending_resolution`
-- The conflict must be resolved by a human before the snapshot is updated
+- Cross-module conflicts → flagged in both modules + `_index.md`
 
-### Step 4: Merge Knowledge
+### Step 4: Merge Knowledge (per-target)
 
-For non-conflicting new increments, merge into the snapshot. For each section:
+For non-conflicting new increments, merge into the target. For each section:
 
 #### Project Overview
 - If new increment changes project description (new module, new capability) → update
@@ -107,9 +121,9 @@ When compiling snapshot:
 - [EXTERNAL] AbilityExpand 有 3 个字段 — 来源: agent 推断, 需验证
 ```
 
-### Step 6: Write Updated Snapshot
+### Step 6: Write Outputs
 
-Write `.ai-context/snapshot.md`:
+Write `.ai-context/snapshot.md` (global knowledge):
 
 ```markdown
 # AI Context Snapshot
@@ -124,24 +138,39 @@ Write `.ai-context/snapshot.md`:
 - [CONFLICT] Payment timeout: pending_resolution (see Key Decisions)
 ```
 
-**Size constraint**: Keep snapshot under 200 lines. If it grows beyond:
-- Archive historical decisions to `.ai-context/archive/decisions-history.md`
-- Keep only current, actionable knowledge in snapshot
+Write `modules/<name>/knowledge.md` for each affected module using `templates/module-knowledge.md`.
+
+Write updated `modules/_index.md` if new modules were discovered or cross-refs changed.
+
+**Size constraint**: Keep each knowledge file under 200 lines. If it grows beyond:
+- Archive historical decisions to `modules/<name>/archive/decisions-history.md`
+- Keep only current, actionable knowledge in `knowledge.md`
 - Preserve the full history in archive — never lose knowledge, just move it
 
 ### Step 7: Archive Old Increments
 
-Move all compiled increments to `.ai-context/increments/archive/`:
+Move all compiled increments to archive:
 
 ```bash
+# Global increments
 mv .ai-context/increments/*.md .ai-context/increments/archive/ 2>/dev/null || true
+
+# Per-module increments
+for module_dir in .ai-context/modules/*/; do
+  mv "$module_dir/increments"/*.md "$module_dir/increments/archive/" 2>/dev/null || true
+done
 ```
 
-### Step 8: Git Add
+### Step 8: Update Module Registry
+
+If `/lore-evolve` discovered new modules during routing (from `affected_files` paths), add them to `_index.md`.
+
+### Step 9: Git Add
 
 ```bash
 git add .ai-context/snapshot.md
 git add .ai-context/increments/archive/
+git add .ai-context/modules/
 ```
 
 ## Output
@@ -149,10 +178,12 @@ git add .ai-context/increments/archive/
 Report to user:
 ```
 Snapshot compiled:
+- Mode: modular (X modules) | legacy (single-file)
 - Updated sections: Architecture, Key Decisions, Constraints
 - New knowledge: +2 decisions, +1 constraint
+- Module changes: order +1 decision, payment +1 constraint
 - Conflicts: 1 pending_resolution (Payment timeout)
 - Low confidence: 1 item pending verification
-- Archived: 3 increments
-- Snapshot size: 145 lines
+- Archived: 3 global increments, 2 module increments
+- Snapshot size: 145 lines (global), 98 (order), 67 (payment)
 ```

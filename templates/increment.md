@@ -11,6 +11,7 @@
 - timestamp: {{YYYY-MM-DD HH:MM:SS}}
 - trigger: {{auto-dialogue / post-commit / manual}}
 - confidence: {{high / medium / low}}
+- domain: {{module-name or empty for global knowledge}}
 
 ## Affected Files
 - `{{file/path}}` → {{DECISION/CONSTRAINT/ARCHITECTURE/EXTERNAL}}
