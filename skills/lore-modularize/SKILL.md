@@ -58,34 +58,57 @@ category: ai-context
 .ai-context/modules/
 ├── _index.md                  # 模块注册表
 ├── {{module-name}}/
-│   ├── knowledge.md           # 模块知识
-│   ├── specs/                 # prescriptive 层（空目录）
-│   │   └── index.md           # Spec 目录
+│   ├── knowledge.md           # 模块知识（L1+L3）
+│   ├── specs/                 # prescriptive 层（L0，由 /lore-spec 管理）
+│   │   └── index.md           # Spec 目录索引
 │   ├── increments/            # 模块增量
 │   ├── progress.md            # 模块进度
 │   └── cross-refs.md          # 跨模块依赖
 ```
 
-### Step 5: Write Module Knowledge Files
+### Step 5: Write Module Specs Index
+
+对每个模块，创建 `specs/index.md`：
+
+```markdown
+# Specs: {{module-name}}
+
+> Managed by /lore-spec. Do not edit manually.
+
+## Specs
+
+| Spec | Type | Status | Created |
+|------|------|--------|---------|
+
+## Status Legend
+
+- **draft**: 正在设计
+- **proposed**: 已提出，待评审
+- **approved**: 已批准，可以实现
+- **implemented**: 已实现，知识已提取
+- **superseded**: 已废弃
+```
+
+### Step 6: Write Module Knowledge Files
 
 对每个模块，使用 `templates/module-knowledge.md` 模板创建 `knowledge.md`：
 - 从 snapshot 中提取该模块相关的知识条目
 - 保持原有证据溯源（author/timestamp/confidence/source）
 
-### Step 6: Write Module Registry
+### Step 7: Write Module Registry
 
 创建 `modules/_index.md`：
 - 列出所有发现的模块
 - 代码路径映射
 - 模块用途（从知识条目推断）
 
-### Step 7: Write Module Progress
+### Step 8: Write Module Progress
 
 对每个模块创建 `progress.md`：
 - 知识条目数量
 - 最后更新时间
 
-### Step 8: Mark Legacy Snapshot
+### Step 9: Mark Legacy Snapshot
 
 在 `snapshot.md` 顶部添加标记：
 ```
@@ -93,7 +116,7 @@ category: ai-context
 > This file is kept for backward compatibility.
 ```
 
-### Step 9: Git Add
+### Step 10: Git Add
 
 ```bash
 git add .ai-context/modules/
