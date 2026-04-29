@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # stop-flush.sh — Stop hook: detects if buffer needs flushing or evolve needed
 # Triggered after every agent turn completion.
-# Checks: buffer entries, unarchived increments, and time elapsed.
+# Checks: buffer entries, unarchived increments (global + per-module), and time elapsed.
 
 set -euo pipefail
 
@@ -9,13 +9,14 @@ WORK_DIR="${CLAUDE_WORKING_DIRECTORY:-$(pwd)}"
 BUFFER_FILE="$WORK_DIR/.ai-context/buffer.md"
 INCREMENT_DIR="$WORK_DIR/.ai-context/increments"
 LAST_FLUSH_FILE="$WORK_DIR/.ai-context/.last-flush-time"
+MODULES_DIR="$WORK_DIR/.ai-context/modules"
 
 # Buffer thresholds
 FLUSH_THRESHOLD_SOFT=5    # Suggest flush
 FLUSH_THRESHOLD_HARD=15   # Force flush
 COMPACT_THRESHOLD=8       # Trigger /lore-compact
 
-# Evolve thresholds (unarchived increments)
+# Evolve thresholds (unarchived increments, global + module combined)
 EVOLVE_THRESHOLD_SOFT=3   # Suggest evolve
 EVOLVE_THRESHOLD_HARD=5   # Force evolve
 
@@ -27,7 +28,7 @@ if [ -f "$BUFFER_FILE" ] && grep -q '^\[LOCKED:' "$BUFFER_FILE" 2>/dev/null; the
   exit 0
 fi
 
-# Count unarchived increments (exclude archive/ and .gitkeep)
+# Count unarchived increments (global, exclude archive/ and .gitkeep)
 UNARCHIVED_INCREMENTS=0
 if [ -d "$INCREMENT_DIR" ]; then
   for f in "$INCREMENT_DIR"/*.md; do
@@ -35,14 +36,30 @@ if [ -d "$INCREMENT_DIR" ]; then
   done
 fi
 
+# Count unarchived module increments
+MODULE_INCREMENTS=0
+if [ -d "$MODULES_DIR" ]; then
+  for module_dir in "$MODULES_DIR"/*/; do
+    [ -d "$module_dir" ] || continue
+    mod_incr_dir="$module_dir/increments"
+    [ -d "$mod_incr_dir" ] || continue
+    for f in "$mod_incr_dir"/*.md; do
+      [ -f "$f" ] && MODULE_INCREMENTS=$((MODULE_INCREMENTS + 1))
+    done
+  done
+fi
+
+# Total unarchived increments
+TOTAL_UNARCHIVED=$((UNARCHIVED_INCREMENTS + MODULE_INCREMENTS))
+
 # Check evolve threshold (higher priority than buffer)
-if [ "$UNARCHIVED_INCREMENTS" -ge "$EVOLVE_THRESHOLD_HARD" ]; then
-  echo "[AI-CONTEXT] ${UNARCHIVED_INCREMENTS} unarchived increments detected (hard limit: ${EVOLVE_THRESHOLD_HARD}). Execute /lore-evolve NOW to compile snapshot and archive old increments. This is urgent — snapshot is stale. Do not ask the user for confirmation."
+if [ "$TOTAL_UNARCHIVED" -ge "$EVOLVE_THRESHOLD_HARD" ]; then
+  echo "[AI-CONTEXT] ${TOTAL_UNARCHIVED} unarchived increments detected (hard limit: ${EVOLVE_THRESHOLD_HARD}). Execute /lore-evolve NOW to compile snapshot and archive old increments. This is urgent — snapshot is stale. Do not ask the user for confirmation."
   exit 0
 fi
 
-if [ "$UNARCHIVED_INCREMENTS" -ge "$EVOLVE_THRESHOLD_SOFT" ]; then
-  echo "[AI-CONTEXT] ${UNARCHIVED_INCREMENTS} unarchived increments accumulated. Execute /lore-evolve to compile snapshot and archive. This is automated — do not ask the user for confirmation."
+if [ "$TOTAL_UNARCHIVED" -ge "$EVOLVE_THRESHOLD_SOFT" ]; then
+  echo "[AI-CONTEXT] ${TOTAL_UNARCHIVED} unarchived increments accumulated. Execute /lore-evolve to compile snapshot and archive."
   exit 0
 fi
 
