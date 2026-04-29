@@ -38,7 +38,7 @@ install_global_skills() {
 
   echo "Registering Lore skills globally..."
 
-  LORE_SKILLS=("lore-init" "lore-digest" "lore-compact" "lore-evolve" "lore-health" "lore-sync" "lore-constraint" "lore-import")
+  LORE_SKILLS=("lore-init" "lore-digest" "lore-compact" "lore-evolve" "lore-health" "lore-sync" "lore-constraint" "lore-import" "lore-modularize" "lore-spec")
   INSTALLED=0
   UPDATED=0
 
@@ -139,7 +139,7 @@ uninstall_global_claude_md() {
   echo "  Your other CLAUDE.md content is preserved."
 
   # Remove global skills
-  LORE_SKILLS=("lore-init" "lore-digest" "lore-compact" "lore-evolve" "lore-health" "lore-sync" "lore-constraint" "lore-import")
+  LORE_SKILLS=("lore-init" "lore-digest" "lore-compact" "lore-evolve" "lore-health" "lore-sync" "lore-constraint" "lore-import" "lore-modularize" "lore-spec")
   REMOVED=0
   for skill in "${LORE_SKILLS[@]}"; do
     DST_SKILL="$GLOBAL_SKILLS_DIR/$skill"
